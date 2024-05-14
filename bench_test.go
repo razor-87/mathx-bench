@@ -43,3 +43,72 @@ func BenchmarkVecSum(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkVecDotProd(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs     int64
+		xs, ys []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		ys = vec.Copy(xs)
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			var local float64
+			for i := 0; i < b.N; i++ {
+				local = vec.DotProd(xs, ys)
+			}
+			sink = local
+		})
+	}
+}
+
+var sinkVec []float64
+
+func BenchmarkVecAdd(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs     int64
+		xs, ys []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vec.Zeros[[]float64](size)
+		ys = vecs[size]
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			for i := 0; i < b.N; i++ {
+				vec.Add(xs, ys)
+			}
+			sinkVec = xs
+		})
+	}
+}
+
+func BenchmarkVecScale(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs int64
+		xs []float64
+		c  = 0.999
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			for i := 0; i < b.N; i++ {
+				vec.Scale(xs, c)
+			}
+			sinkVec = xs
+		})
+	}
+}
