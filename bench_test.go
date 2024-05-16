@@ -20,7 +20,10 @@ var prepared bool = func() bool {
 	return true
 }()
 
-var sink float64
+var (
+	sink    float64
+	sinkVec []float64
+)
 
 func BenchmarkVecSum(b *testing.B) {
 	for !prepared {
@@ -67,7 +70,27 @@ func BenchmarkVecDotProd(b *testing.B) {
 	}
 }
 
-var sinkVec []float64
+func BenchmarkVecLength(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs int64
+		xs []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			var local float64
+			for i := 0; i < b.N; i++ {
+				local = vec.Length(xs)
+			}
+			sink = local
+		})
+	}
+}
 
 func BenchmarkVecAdd(b *testing.B) {
 	for !prepared {
@@ -93,6 +116,30 @@ func BenchmarkVecAdd(b *testing.B) {
 	}
 }
 
+func BenchmarkVecAddScaled(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs     int64
+		xs, ys []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		ys = vec.Copy(xs)
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			var local []float64
+			for i := 0; i < b.N; i++ {
+				vec.AddScaled(xs, ys, 0.999)
+				local = xs
+			}
+			sinkVec = local
+		})
+	}
+}
+
 func BenchmarkVecScale(b *testing.B) {
 	for !prepared {
 		time.Sleep(2 * time.Second)
@@ -109,6 +156,29 @@ func BenchmarkVecScale(b *testing.B) {
 			var local []float64
 			for i := 0; i < b.N; i++ {
 				vec.Scale(xs, 0.999)
+				local = xs
+			}
+			sinkVec = local
+		})
+	}
+}
+
+func BenchmarkVecUnit(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs int64
+		xs []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			var local []float64
+			for i := 0; i < b.N; i++ {
+				vec.Unit(xs)
 				local = xs
 			}
 			sinkVec = local
