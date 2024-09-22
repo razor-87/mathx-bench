@@ -47,6 +47,29 @@ func BenchmarkVecSum(b *testing.B) {
 	}
 }
 
+func BenchmarkVecCosSim(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs     int64
+		xs, ys []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		ys = vec.Copy(xs)
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			var local float64
+			for i := 0; i < b.N; i++ {
+				local = vec.CosSim(xs, ys)
+			}
+			sink = local
+		})
+	}
+}
+
 func BenchmarkVecDotProd(b *testing.B) {
 	for !prepared {
 		time.Sleep(2 * time.Second)
@@ -64,6 +87,29 @@ func BenchmarkVecDotProd(b *testing.B) {
 			var local float64
 			for i := 0; i < b.N; i++ {
 				local = vec.DotProd(xs, ys)
+			}
+			sink = local
+		})
+	}
+}
+
+func BenchmarkVecEucDist(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs     int64
+		xs, ys []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		ys = vec.Copy(xs)
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			var local float64
+			for i := 0; i < b.N; i++ {
+				local = vec.EucDist(xs, ys)
 			}
 			sink = local
 		})
@@ -88,6 +134,29 @@ func BenchmarkVecLength(b *testing.B) {
 				local = vec.Length(xs)
 			}
 			sink = local
+		})
+	}
+}
+
+func BenchmarkVecAddition(b *testing.B) {
+	for !prepared {
+		time.Sleep(2 * time.Second)
+	}
+	var (
+		bs int64
+		xs []float64
+	)
+	for i, size := range sizes {
+		bs = int64(size * 8)
+		xs = vecs[size]
+		b.Run(bytes[i], func(b *testing.B) {
+			b.SetBytes(bs)
+			var local []float64
+			for i := 0; i < b.N; i++ {
+				vec.Addition(xs, 0.111)
+				local = xs
+			}
+			sinkVec = local
 		})
 	}
 }

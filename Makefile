@@ -1,4 +1,4 @@
-BENCH=VecAddScaled
+BENCH=VecAddition
 
 lint:
 	@golangci-lint run
