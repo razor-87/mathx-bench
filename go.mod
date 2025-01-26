@@ -1,6 +1,6 @@
 module bench
 
-go 1.21
+go 1.22
 
 require github.com/razor-87/mathx v0.0.0
 
